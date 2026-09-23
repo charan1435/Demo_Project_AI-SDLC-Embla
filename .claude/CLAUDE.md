@@ -94,6 +94,18 @@ Two separately deployable applications communicating over HTTP:
 - `frontend/src/features/admin/` is a third silo alongside `student/`/`teacher/` — no cross-imports between role features; shared UI lives in `shared/`.
 - Reporting/aggregation (percentages, trends) lives in a dedicated `reports` backend module and is computed in the DB (SQL aggregate), not row-by-row in app code.
 
+## Development workflow
+
+**Subagents.** Delegate via the `Agent` tool when work is independent research or independent parallel work — not for every task. Good fits:
+- Exploration/research before writing code (`feature-dev:code-explorer`, `Explore`) so the main thread's context stays clean.
+- 2+ independent units of work with no shared state (e.g. scaffolding `frontend/`, `backend/`, and `tests/` skeletons at once) — see `superpowers:dispatching-parallel-agents`.
+- Code review — `embla-core:pr-review` (7 parallel review dimensions) or the `code-review` skill, rather than a manual read-through of a large diff.
+Don't spawn a subagent for a single sequential edit you can just make directly.
+
+**Worktrees for parallel development.** When picking up a second story while another is still in flight, isolate each in its own `git worktree` rather than stashing/switching branches in place — see `superpowers:using-git-worktrees`. One worktree per active `s{sprint}/{jira-key}-...` branch keeps `frontend/`, `backend/`, and `tests/` changes from bleeding across unrelated stories.
+
+**Frontend design.** Before building or reshaping any UI, load the `frontend-design` skill first — see `frontend/CLAUDE.md`.
+
 ## Conventions
 
 - **Naming:** DB tables/columns follow Prisma model/field casing from the schema sketch (models `PascalCase`, fields `camelCase`); entity names match the domain model table above.
