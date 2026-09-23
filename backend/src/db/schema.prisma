@@ -1,0 +1,109 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Teacher {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  assignments  TeacherAssignment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Student {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  classId      String
+  class        Class    @relation(fields: [classId], references: [id])
+  enrollments  Enrollment[]
+  records      AttendanceRecord[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Class {
+  id          String    @id @default(cuid())
+  name        String    // e.g. "Grade 10 - A"
+  students    Student[]
+  assignments TeacherAssignment[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+  enrollments Enrollment[]
+  assignments TeacherAssignment[]
+  sessions    Session[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  studentId String
+  subjectId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, subjectId])
+}
+
+model TeacherAssignment {
+  id        String   @id @default(cuid())
+  teacherId String
+  subjectId String
+  classId   String?           // null = all classes for this subject
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class?   @relation(fields: [classId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  startsAt  DateTime // UTC — also the attendance window start
+  endsAt    DateTime // UTC — also the attendance window end
+  records   AttendanceRecord[]
+  createdAt DateTime @default(now())
+
+  @@index([subjectId])
+}
+
+model AttendanceRecord {
+  id        String   @id @default(cuid())
+  studentId String
+  sessionId String
+  status    AttendanceStatus @default(PRESENT) // v1: only PRESENT is ever written
+  markedAt  DateTime         // UTC, server clock at time of marking
+  student   Student  @relation(fields: [studentId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, sessionId])   // DB-level, enforces non-negotiable #4
+  @@index([sessionId])
+  @@index([studentId])
+}
+
+enum AttendanceStatus {
+  PRESENT
+}
