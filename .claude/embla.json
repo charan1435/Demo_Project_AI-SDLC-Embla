@@ -1,0 +1,62 @@
+{
+  "repo": {
+    "provider": "github",
+    "workspace": "charan1435",
+    "slug": "Demo_Project_AI-SDLC-Embla",
+    "url": "https://github.com/charan1435/Demo_Project_AI-SDLC-Embla"
+  },
+  "tracker": {
+    "provider": "jira",
+    "jira": {
+      "siteUrl": "https://emblarnd.atlassian.net",
+      "cloudId": "b9717542-7451-4fd4-b517-0bfa3e0a91cc",
+      "projectKey": "AI",
+      "boardId": 19,
+      "customFields": {
+        "sprint": "customfield_10019",
+        "acceptanceCriteria": ""
+      },
+      "statuses": {
+        "toDo": ["To Do"],
+        "inDev": ["In Progress"],
+        "inReview": ["Review"],
+        "done": ["Done"],
+        "deployed": ["Deployment", "QA"]
+      },
+      "issueTypes": {
+        "epic":      { "jiraName": "Epic",     "summaryFormat": "{product-area}: {goal}" },
+        "userStory": { "jiraName": "Story",    "summaryFormat": "As a {role}, I want {goal} so that {benefit}" },
+        "task":      { "jiraName": "Task",     "summaryFormat": "{verb} {subject}" },
+        "bug":       { "jiraName": "Bug",      "summaryFormat": "[BUG] {component}: {symptom}" },
+        "subTask":   { "jiraName": "Sub-task", "summaryFormat": "{verb} {subject}" }
+      }
+    }
+  },
+  "sprint": {
+    "namingPattern": "AI Sprint {number}",
+    "durationWeeks": 2,
+    "goalFormat": ""
+  },
+  "masterBranch": "main",
+  "featureBranchFormat": "s{sprint}/{jira-key}-{short-description}",
+  "bugBranchFormat": "s{sprint}/bug/{jira-key}-{short-description}",
+  "hotfixBranchFormat": "hotfix/{jira-key}-{short-description}",
+  "releaseBranchFormat": "release/s{sprint}",
+  "commitMessageFormat": "{jira-key} {type}: {description}",
+  "team": {
+    "lead": [],
+    "qa": [],
+    "ui": [],
+    "devops": [],
+    "dev": [
+      { "name": "Saicharan Gnanapiragasam", "jiraAccountId": "712020:fae1d817-7deb-41a9-8904-3132ae879c24" }
+    ]
+  },
+  "teamsWebhookUrl": "",
+  "reviewSlaHours": 24,
+  "publicHolidays": [],
+  "reviewerMode": "dev",
+  "prSizeGateThreshold": 300,
+  "testCoverageThreshold": 80,
+  "publishThreshold": 60
+}
