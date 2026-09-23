@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >
 > Layer-specific guidance lives in `frontend/CLAUDE.md`, `backend/CLAUDE.md`, and `tests/CLAUDE.md` — Claude Code auto-loads the nearest one alongside this file. This root file covers cross-cutting concerns: domain model, auth/security rules, and conventions shared by both apps.
 
+## Development wiki
+
+This repo maintains a development knowledge base at `wiki/` (Karpathy's LLM Wiki pattern — see `wiki/CLAUDE.md` for the full schema). Before answering any question about domain rules, decisions, architecture rationale, or project history, first read `wiki/index.md`, then the relevant `wiki/pages/*.md` files, and cite them in the answer. Do not answer such questions from memory or from summaries elsewhere in this file alone — the wiki is the source of truth once a topic has been ingested there.
+
+Quick reference:
+- Drop new notes/decisions into `wiki/raw/` and ask Claude to ingest them
+- Ask questions — Claude consults `wiki/pages/` and cites sources
+- Run lint periodically: "lint the wiki"
+- `wiki/raw/` is read-only. Never modify files there.
+- `wiki/pages/` is LLM-owned. Only Claude writes there.
+
 ## Project summary
 
 A web-based student attendance system for a real school deployment (single school, hundreds to low-thousands of students, cloud-hosted). Students mark their own attendance during an active session window via a "Mark Present" button (v1 — no QR/PIN/geofencing). Teachers get a dashboard for attendance tracking per subject, session, and student. An admin role provisions all underlying data through in-app CRUD.
@@ -32,24 +43,7 @@ Three roles, each with a **fully separate login flow** (separate pages/endpoints
 
 ## Domain model
 
-| Entity | Key fields / notes |
-|---|---|
-| `Admin` | `id`, `name`, `email` (unique), `passwordHash` |
-| `Student` | belongs to one `Class`; enrolled in many `Subject`s via `Enrollment` |
-| `Teacher` | assigned to many `Subject`s (optionally scoped per `Class`) via `TeacherAssignment` |
-| `Class` (grade/section) | groups students |
-| `Subject` | taught by teacher(s); has enrollments; not FK'd to a single `Class` — class-scoping happens via `TeacherAssignment.classId` and via which class's students are enrolled |
-| `Enrollment` | `Student` ↔ `Subject` join, unique on `(studentId, subjectId)` |
-| `TeacherAssignment` | `Teacher` ↔ `Subject` (+ optional `Class`) join |
-| `Session` | one scheduled meeting of a `Subject`: `startsAt`, `endsAt` (UTC) — this **is** the attendance window for v1, no separate narrower field |
-| `AttendanceRecord` | `studentId`, `sessionId`, `status`, `markedAt` (UTC), `createdAt`/`updatedAt` |
-
-Relationships: `Subject 1—* Session 1—* AttendanceRecord *—1 Student`.
-
-**Key decisions (do not relitigate without updating this file):**
-- **A — absence is derived, never stored.** No `ABSENT` rows are ever written. A student is absent for a session iff the window has closed and no `AttendanceRecord` exists for `(studentId, sessionId)`. Attendance % per subject = `COUNT(distinct AttendanceRecord for student+subject) / COUNT(Session for subject where endsAt < now())`, computed as a SQL aggregate.
-- **B — the attendance window *is* `Session.startsAt`–`endsAt`.** Can be split into a narrower marking window later if needed.
-- **C — `passwordHash` lives directly on each role table** (`Admin`, `Teacher`, `Student`), never a shared `users` table with a role discriminator column. Role identity is intrinsic to which table a record is in, never a spoofable field.
+Entities, relationships, and the full rationale behind the key decisions — **A** (absence is derived, never stored), **B** (the attendance window *is* `Session.startsAt`–`endsAt`), and **C** (`passwordHash` lives per-role-table, never a shared `users` table) — live in the wiki: see `wiki/pages/concept-domain-model.md` and the linked `wiki/pages/decision-*.md` pages. Do not relitigate those decisions without updating the wiki pages first.
 
 Full Prisma schema sketch lives in the design spec (`docs/superpowers/specs/2026-09-23-student-attendance-system-design.md`, §3) and should be treated as authoritative for `backend/src/db/schema.prisma` once created.
 
@@ -108,7 +102,7 @@ Don't spawn a subagent for a single sequential edit you can just make directly.
 
 ## Conventions
 
-- **Naming:** DB tables/columns follow Prisma model/field casing from the schema sketch (models `PascalCase`, fields `camelCase`); entity names match the domain model table above.
+- **Naming:** DB tables/columns follow Prisma model/field casing from the schema sketch (models `PascalCase`, fields `camelCase`); entity names match the domain model (see `wiki/pages/concept-domain-model.md`).
 - **Components:** feature-scoped folders; role-specific UI never imported across `student/` ↔ `teacher/` ↔ `admin/`. Shared pieces go in `shared/`.
 - **Errors:** services throw typed domain errors (`NotEnrolled`, `SessionClosed`, `DuplicateAttendance`, `Forbidden`, not-found, `VALIDATION_ERROR`); a single error handler maps them to HTTP status + a stable error code (full table in `backend/CLAUDE.md`). No raw DB errors leak to clients.
 - **Testing:** business rules and access control get integration tests against a real test database (the uniqueness constraint must be exercised for real — mocks are not sufficient). Dashboard math gets unit tests with fixed fixtures. Coverage target: see `.claude/embla.json` `testCoverageThreshold` (also `tests/CLAUDE.md`).
