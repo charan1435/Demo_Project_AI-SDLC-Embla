@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A web-based student attendance system for a real school deployment (single school, hundreds to low-thousands of students, cloud-hosted). Students mark their own attendance during an active session window via a "Mark Present" button (v1 — no QR/PIN/geofencing). Teachers get a dashboard for attendance tracking per subject, session, and student. An admin role provisions all underlying data through in-app CRUD.
 
-Repo: https://github.com/charan1435/Demo_Project_AI-SDLC-Embla · Jira project `AI` (board 19) on emblarnd.atlassian.net.
+Repo and Jira project/tracker config (URL, project key, board id, site, custom fields, team roster): see `.claude/embla.json` (`repo`, `tracker.jira`) — read it directly rather than relying on a copy here.
 
 ## User roles
 
@@ -111,18 +111,16 @@ Don't spawn a subagent for a single sequential edit you can just make directly.
 - **Naming:** DB tables/columns follow Prisma model/field casing from the schema sketch (models `PascalCase`, fields `camelCase`); entity names match the domain model table above.
 - **Components:** feature-scoped folders; role-specific UI never imported across `student/` ↔ `teacher/` ↔ `admin/`. Shared pieces go in `shared/`.
 - **Errors:** services throw typed domain errors (`NotEnrolled`, `SessionClosed`, `DuplicateAttendance`, `Forbidden`, not-found, `VALIDATION_ERROR`); a single error handler maps them to HTTP status + a stable error code (full table in `backend/CLAUDE.md`). No raw DB errors leak to clients.
-- **Testing:** business rules and access control get integration tests against a real test database (the uniqueness constraint must be exercised for real — mocks are not sufficient). Dashboard math gets unit tests with fixed fixtures. Target: 80% coverage.
+- **Testing:** business rules and access control get integration tests against a real test database (the uniqueness constraint must be exercised for real — mocks are not sufficient). Dashboard math gets unit tests with fixed fixtures. Coverage target: see `.claude/embla.json` `testCoverageThreshold` (also `tests/CLAUDE.md`).
 - **Time:** all time comparisons go through one shared clock utility (`backend/src/shared/`) so tests can freeze time.
 - **Status convention (UI):** green = present, red = absent, amber = window open/pending — always paired with a text label or icon, never color alone.
 
 ## Git workflow
 
-Defined in `.claude/branch-conventions.md`, `.claude/commit-conventions.md`, and `.claude/embla.json` (read those for full details):
-
-- Main branch: `main`
-- Feature: `s{sprint}/{jira-key}-{short-description}` · Bug: `s{sprint}/bug/{jira-key}-...` · Hotfix: `hotfix/{jira-key}-...` · Release: `release/s{sprint}`
-- Commits: `{jira-key} {type}: {description}` (e.g. `AI-1562 feat: add session window check`), imperative, lowercase, ≤72 chars
-- Test coverage target: 80%; PR size gate: ~300 lines
+Source of truth lives in three files — read them directly rather than relying on a copy here, since values are subject to change without this file being updated:
+- `.claude/branch-conventions.md` — branch naming formats and examples (feature/bug/hotfix/release), short-description and sprint-number rules
+- `.claude/commit-conventions.md` — commit message format, full commit-type table, and message rules
+- `.claude/embla.json` — repo/tracker config, `masterBranch`, the branch/commit format strings in machine-readable form, `testCoverageThreshold`, `prSizeGateThreshold`, and team roster
 
 ## Commands
 
