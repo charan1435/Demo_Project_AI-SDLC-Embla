@@ -1,0 +1,26 @@
+{
+  "name": "attendance-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend API for the student attendance system (data-layer scaffolding: Prisma schema + migrations)",
+  "prisma": {
+    "schema": "src/db/schema.prisma"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1",
+    "dotenv": "^16.4.5"
+  }
+}
